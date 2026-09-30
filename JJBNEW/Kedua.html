@@ -1,0 +1,1520 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jegeg Bagus Badung</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-red-1: #15458d;
+      --bg-red-2: #2b21bf;
+      --gold-1: #1f1d91;
+      --gold-2: #2821ab;
+      --gold-3: #242f8f;
+      --white: #ffffff;
+      --card-size: clamp(140px, 20vmin, 260px);
+      --grid-gap: clamp(18px, 4vmin, 56px);
+      --pill-bottom: clamp(10px, 1.6vmin, 16px);
+      --side-margin: 8cm;
+      --gap-ratio: 0.12;
+      --density: 1;
+      --card-min: 140;
+      --card-max: 340;
+      --card-target: 250;
+      --bottom-space: clamp(28px, 4vmin, 64px);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--white);
+      background: #060757;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    /* === MORPHING GRADIENT VIGNETTE === */
+    .gradient-vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 20% 50%, rgba(108, 92, 231, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(9, 132, 227, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 90%, rgba(225, 112, 85, 0.06) 0%, transparent 50%);
+      animation: vignetteShift 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes vignetteShift {
+      0% {
+        opacity: 0.6;
+        filter: hue-rotate(0deg);
+      }
+
+      50% {
+        opacity: 1;
+        filter: hue-rotate(15deg);
+      }
+
+      100% {
+        opacity: 0.7;
+        filter: hue-rotate(-10deg);
+      }
+    }
+
+    /* === PARTICLE CANVAS === */
+    #particleCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* === AMBIENT GLOW ORBS === */
+    .ambient-orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(80px);
+      opacity: 0.18;
+      z-index: 0;
+    }
+
+    .ambient-orb.orb1 {
+      width: 400px;
+      height: 400px;
+      background: #6c5ce7;
+      top: -100px;
+      left: -100px;
+      animation: orbFloat1 12s ease-in-out infinite, orbPulse 4s ease-in-out infinite alternate;
+    }
+
+    .ambient-orb.orb2 {
+      width: 350px;
+      height: 350px;
+      background: #0984e3;
+      bottom: -80px;
+      right: -80px;
+      animation: orbFloat2 15s ease-in-out infinite, orbPulse 5s ease-in-out infinite alternate;
+    }
+
+    .ambient-orb.orb3 {
+      width: 300px;
+      height: 300px;
+      background: #e17055;
+      top: 50%;
+      left: 50%;
+      animation: orbFloat3 18s ease-in-out infinite, orbPulse 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbPulse {
+      0% {
+        opacity: 0.12;
+      }
+
+      100% {
+        opacity: 0.25;
+        filter: blur(60px);
+      }
+    }
+
+    @keyframes orbFloat1 {
+
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      33% {
+        transform: translate(120px, 80px) scale(1.2);
+      }
+
+      66% {
+        transform: translate(-60px, 140px) scale(0.9);
+      }
+    }
+
+    @keyframes orbFloat2 {
+
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      33% {
+        transform: translate(-100px, -60px) scale(1.15);
+      }
+
+      66% {
+        transform: translate(80px, -120px) scale(0.85);
+      }
+    }
+
+    @keyframes orbFloat3 {
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(calc(-50% + 150px), calc(-50% - 100px)) scale(1.3);
+      }
+    }
+
+    /* === BACKGROUND === */
+    .bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* === WRAP === */
+    .wrap {
+      max-width: 100vw;
+      margin: 0 auto;
+      padding: 0 var(--side-margin) var(--bottom-space);
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .wrap.timer-active {
+      align-content: start;
+      padding-top: clamp(32px, 6vmin, 72px);
+    }
+
+    /* === HEADER PILL with levitate === */
+    .pill-img {
+      width: clamp(320px, 20vmin, 440px);
+      height: auto;
+      display: block;
+      margin: -10px auto var(--pill-bottom);
+      filter: drop-shadow(0 12px 22px #00000060);
+      border-radius: 999px;
+      animation: levitate 4s ease-in-out infinite, fadeSlideDown 1s ease-out both, pillGlow 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes levitate {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    @keyframes pillGlow {
+      0% {
+        filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.6)) brightness(1);
+      }
+
+      100% {
+        filter: drop-shadow(0 0 35px rgba(108, 92, 231, 0.6)) brightness(1.15);
+      }
+    }
+
+    @keyframes fadeSlideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* === GRID === */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, var(--card-size));
+      gap: var(--grid-gap);
+      justify-content: center;
+      justify-items: center;
+      align-items: start;
+      perspective: 1200px;
+    }
+
+    /* === CARDS with 3D + entrance === */
+    .card {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1/1;
+      border-radius: clamp(18px, 2.5vw, 22px);
+      overflow: hidden;
+      background-color: transparent;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      box-shadow: 0 clamp(8px, 2vw, 14px) clamp(18px, 3vw, 28px) #00000035,
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+      transform-style: preserve-3d;
+      transition: transform 0.4s cubic-bezier(.25, .46, .45, .94),
+        box-shadow 0.4s ease, filter 0.3s ease,
+        opacity 0.5s ease, visibility 0.5s ease;
+      cursor: pointer;
+      /* Entrance animation + continuous floating */
+      animation: cardEntrance 0.7s cubic-bezier(.25, .46, .45, .94) both,
+        cardContinuousFloat 6s ease-in-out infinite alternate;
+      animation-delay: calc(var(--card-index, 0) * 0.08s),
+        calc(var(--card-index, 0) * 0.3s);
+    }
+
+    @keyframes cardEntrance {
+      from {
+        opacity: 0;
+        transform: rotateY(90deg) scale(0.6) translateY(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: rotateY(0deg) scale(1) translateY(0);
+      }
+    }
+
+    @keyframes cardContinuousFloat {
+      0% {
+        top: 0px;
+      }
+
+      100% {
+        top: -6px;
+      }
+    }
+
+    /* Shimmer sweep — subtle light that glides across */
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: -50%;
+      z-index: 2;
+      background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.06) 45%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.06) 55%, transparent 60%);
+      transform: translateX(-100%) rotate(0deg);
+      pointer-events: none;
+      animation: shimmerSweep 6s ease-in-out infinite;
+      animation-delay: calc(var(--card-index, 0) * 0.6s);
+    }
+
+    @keyframes shimmerSweep {
+
+      0%,
+      100% {
+        transform: translateX(-100%);
+      }
+
+      40%,
+      60% {
+        transform: translateX(100%);
+      }
+    }
+
+    /* Hover gloss overlay */
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .card:hover::after {
+      opacity: 1;
+    }
+
+    .card:hover {
+      transform: translateY(-8px) scale(1.04);
+      box-shadow: 0 20px 40px rgba(108, 92, 231, 0.35), 0 0 20px rgba(108, 92, 231, 0.15),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    }
+
+    /* Smooth exit for hidden cards */
+    .card.hidden {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.7) translateY(20px);
+      transition: transform 0.5s cubic-bezier(.25, .46, .45, .94), opacity 0.4s ease, visibility 0s 0.5s;
+    }
+
+    /* Card vanish — scale up with glow, then shrink away */
+    .card.vanishing {
+      animation: cardVanish 0.8s cubic-bezier(.25, .46, .45, .94) forwards;
+      z-index: 10;
+    }
+
+    @keyframes cardVanish {
+      0% {
+        transform: scale(1.15);
+        opacity: 1;
+        filter: brightness(1.4) saturate(1.3);
+      }
+
+      40% {
+        transform: scale(1.25);
+        opacity: 1;
+        filter: brightness(1.6) saturate(1.5);
+        box-shadow: 0 0 50px rgba(255, 215, 0, 0.7);
+      }
+
+      100% {
+        transform: scale(0.3) rotateY(90deg);
+        opacity: 0;
+        filter: brightness(2) saturate(0);
+      }
+    }
+
+    /* Floating picked number indicator */
+    .float-number {
+      position: fixed;
+      z-index: 70;
+      pointer-events: none;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5);
+      animation: floatNumberUp 1.2s cubic-bezier(.25, .46, .45, .94) forwards;
+    }
+
+    @keyframes floatNumberUp {
+      0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+      }
+
+      20% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+      }
+
+      60% {
+        transform: translate(-50%, calc(-50% - 40px)) scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(-50%, calc(-50% - 80px)) scale(0.8);
+        opacity: 0;
+      }
+    }
+
+    /* Sparkle particles around winner */
+    .sparkle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 58;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ffd700;
+      box-shadow: 0 0 6px #ffd700, 0 0 12px rgba(255, 215, 0, 0.5);
+      animation: sparkleAnim 0.8s ease-out forwards;
+    }
+
+    @keyframes sparkleAnim {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+      }
+
+      50% {
+        transform: translate(var(--sx), var(--sy)) scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(calc(var(--sx) * 1.5), calc(var(--sy) * 1.5)) scale(0);
+        opacity: 0;
+      }
+    }
+
+    /* === RANDOM PICK EFFECTS === */
+    .card.dim {
+      filter: brightness(0.4) saturate(0.6) blur(1px);
+      transition: filter 0.3s ease, transform 0.3s ease;
+      transform: scale(0.95);
+    }
+
+    .card.spotlight {
+      filter: brightness(1.2) saturate(1.3);
+      box-shadow:
+        0 0 0 4px rgba(255, 215, 0, 0.6),
+        0 0 30px rgba(255, 215, 0, 0.5),
+        0 0 60px rgba(108, 92, 231, 0.4);
+      transform: scale(1.1) translateY(-6px);
+      transition: all 0.15s ease;
+      z-index: 5;
+    }
+
+    /* Rotating ring for spotlight card */
+    .card.spotlight::before {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      z-index: -1;
+      border-radius: inherit;
+      border: 2px dashed rgba(255, 215, 0, 0.8);
+      animation: rotateRing 4s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes rotateRing {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .card.winner {
+      animation: winnerPulse 0.6s ease-in-out 3;
+      box-shadow:
+        0 0 0 6px rgba(255, 215, 0, 0.8),
+        0 0 40px rgba(255, 215, 0, 0.6),
+        0 0 80px rgba(255, 215, 0, 0.3);
+      z-index: 6;
+    }
+
+    @keyframes winnerPulse {
+
+      0%,
+      100% {
+        transform: scale(1.1);
+      }
+
+      50% {
+        transform: scale(1.18);
+      }
+    }
+
+    /* === SHOCKWAVE === */
+    .shockwave {
+      position: fixed;
+      pointer-events: none;
+      z-index: 55;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 215, 0, 0.8);
+      animation: shockwaveExpand 0.8s ease-out forwards;
+    }
+
+    @keyframes shockwaveExpand {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(-50%, -50%) scale(40);
+        opacity: 0;
+      }
+    }
+
+    /* === CONFETTI === */
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      z-index: 60;
+      pointer-events: none;
+      border-radius: 2px;
+      animation: confettiFall 1.5s cubic-bezier(.25, .46, .45, .94) forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(100vh) rotate(720deg) scale(0.3);
+        opacity: 0;
+      }
+    }
+
+    /* === OVERLAY with cinematic entrance === */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(30, 20, 80, 0.6) 0%, rgba(0, 0, 0, 0.85) 100%);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      backdrop-filter: blur(12px) saturate(140%);
+    }
+
+    .overlay.show {
+      display: flex;
+      animation: overlayIn 0.4s ease-out;
+    }
+
+    @keyframes overlayIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .overlay-card {
+      position: relative;
+      width: clamp(320px, 46vmin, 560px);
+      aspect-ratio: 1/1;
+      border-radius: clamp(18px, 2.5vw, 22px);
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(108, 92, 231, 0.3);
+      animation: overlayCardIn 0.5s cubic-bezier(.25, .46, .45, .94) both;
+    }
+
+    /* Magical glowing aura behind overlay card */
+    .overlay-card::before {
+      content: '';
+      position: absolute;
+      inset: -20px;
+      z-index: -1;
+      border-radius: clamp(24px, 3.5vw, 32px);
+      background: conic-gradient(from 0deg, transparent 0%, rgba(255, 215, 0, 0.2) 25%, transparent 50%, rgba(108, 92, 231, 0.2) 75%, transparent 100%);
+      animation: auraRotate 6s linear infinite;
+      filter: blur(15px);
+      pointer-events: none;
+    }
+
+    @keyframes auraRotate {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes overlayCardIn {
+      from {
+        opacity: 0;
+        transform: scale(0.5) rotateY(15deg);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg);
+      }
+    }
+
+    /* === TIMER === */
+    .timer {
+      font-size: 200px;
+      font-weight: 900;
+      margin: 18px 0 24px;
+      color: #381aa2;
+      text-shadow: 0 0 18px rgba(47, 22, 148, 0.6);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .timer.hidden {
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    .timer-wrapper {
+      margin-top: 12px;
+      margin-bottom: 18px;
+      transition: margin 0.3s ease, opacity 0.3s ease;
+    }
+
+    .timer-wrapper.hidden {
+      opacity: 0;
+      margin-top: 0;
+      margin-bottom: 0;
+      pointer-events: none;
+    }
+
+    .reset-btn {
+      padding: 8px 18px;
+      font-size: 14px;
+      font-weight: 800;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(180deg, #3627a6, #3720b8);
+      color: #241b77;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    .reset-btn.hidden {
+      display: none;
+    }
+
+    /* === TIMER OVERLAY with ring === */
+    .timer-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+      z-index: 40;
+    }
+
+    .timer-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .timer-ring-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: ringGlowPulse 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes ringGlowPulse {
+      0% {
+        filter: drop-shadow(0 0 10px rgba(108, 92, 231, 0.3));
+      }
+
+      100% {
+        filter: drop-shadow(0 0 25px rgba(108, 92, 231, 0.6));
+      }
+    }
+
+    .timer-ring {
+      width: clamp(180px, 22vmin, 300px);
+      height: clamp(180px, 22vmin, 300px);
+      transform: rotate(-90deg);
+    }
+
+    .timer-ring-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 6;
+    }
+
+    .timer-ring-progress {
+      fill: none;
+      stroke: #6c5ce7;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease, stroke 0.5s ease;
+    }
+
+    .timer-float {
+      position: absolute;
+      font-size: clamp(54px, 7vmin, 96px);
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), 0 0 28px rgba(255, 255, 255, 0.45);
+      transition: color 0.3s ease, text-shadow 0.3s ease, transform 0.15s ease;
+      animation: neonFlicker 3s infinite alternate;
+    }
+
+    @keyframes neonFlicker {
+
+      0%,
+      19%,
+      21%,
+      23%,
+      25%,
+      54%,
+      56%,
+      100% {
+        opacity: 1;
+        filter: brightness(1);
+      }
+
+      20%,
+      24%,
+      55% {
+        opacity: 0.85;
+        filter: brightness(0.8);
+      }
+    }
+
+    /* Subtle bounce on each tick */
+    .timer-float.tick-bounce {
+      animation: digitBounce 0.3s cubic-bezier(.25, .46, .45, .94);
+    }
+
+    @keyframes digitBounce {
+      0% {
+        transform: scale(1);
+      }
+
+      40% {
+        transform: scale(1.08);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* Timer pulse classes */
+    @keyframes pulseSlow {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.06);
+      }
+    }
+
+    @keyframes pulseMedium {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.12);
+      }
+    }
+
+    @keyframes pulseFast {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.2);
+      }
+    }
+
+    @keyframes timerShake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-4px);
+      }
+
+      40% {
+        transform: translateX(4px);
+      }
+
+      60% {
+        transform: translateX(-3px);
+      }
+
+      80% {
+        transform: translateX(3px);
+      }
+    }
+
+    .timer-float.pulse-30 {
+      animation: pulseSlow 1.2s infinite;
+    }
+
+    .timer-float.pulse-15 {
+      animation: pulseMedium 0.8s infinite;
+    }
+
+    .timer-float.pulse-5 {
+      animation: pulseFast 0.4s infinite, timerShake 0.3s infinite;
+    }
+
+    .timer-float.finish {
+      animation: none !important;
+      transform: scale(1.35);
+      color: #ff4757;
+      text-shadow: 0 0 40px rgba(255, 71, 87, 0.8);
+    }
+
+    /* === SCREEN FLASH === */
+    .screen-flash {
+      position: fixed;
+      inset: 0;
+      background: white;
+      z-index: 100;
+      pointer-events: none;
+      animation: flashAnim 0.5s ease-out forwards;
+    }
+
+    @keyframes flashAnim {
+      0% {
+        opacity: 0.7;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    /* === STARRY BACKGROUND === */
+    .star-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 10%, rgba(255, 255, 255, 0.8) 100%, transparent),
+        radial-gradient(2px 2px at 20% 30%, rgba(255, 215, 0, 0.6) 100%, transparent),
+        radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, 0.7) 100%, transparent),
+        radial-gradient(2px 2px at 60% 20%, rgba(255, 255, 255, 0.5) 100%, transparent),
+        radial-gradient(1px 1px at 80% 80%, rgba(255, 215, 0, 0.8) 100%, transparent),
+        radial-gradient(2px 2px at 90% 40%, rgba(255, 255, 255, 0.9) 100%, transparent);
+      background-size: 200px 200px;
+      opacity: 0.4;
+      animation: starsTwinkle 4s infinite alternate;
+    }
+
+    @keyframes starsTwinkle {
+      0% {
+        opacity: 0.2;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0.6;
+        transform: scale(1.02);
+      }
+    }
+
+    /* Shooting Star */
+    .star-layer::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 150px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.8));
+      transform: rotate(-45deg);
+      filter: drop-shadow(0 0 10px white);
+      animation: shootingStar 8s linear infinite;
+    }
+
+    @keyframes shootingStar {
+      0% {
+        transform: rotate(-45deg) translateX(0);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      20% {
+        transform: rotate(-45deg) translateX(-1500px);
+        opacity: 0;
+      }
+
+      100% {
+        transform: rotate(-45deg) translateX(-1500px);
+        opacity: 0;
+      }
+    }
+
+    /* === GRID SUBTLE BREATHE === */
+    .grid {
+      animation: gridBreathe 8s ease-in-out infinite;
+    }
+
+    @keyframes gridBreathe {
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 0px transparent);
+      }
+
+      50% {
+        filter: drop-shadow(0 0 12px rgba(108, 92, 231, 0.08));
+      }
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1024px) {
+      .grid {
+        grid-template-columns: repeat(4, var(--card-size));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(3, var(--card-size));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .grid {
+        grid-template-columns: repeat(2, var(--card-size));
+      }
+    }
+
+    @media (max-width: 360px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Particle Canvas -->
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- Ambient Glow Orbs -->
+  <div class="ambient-orb orb1"></div>
+  <div class="ambient-orb orb2"></div>
+  <div class="ambient-orb orb3"></div>
+
+  <!-- Morphing Gradient Vignette -->
+  <div class="gradient-vignette"></div>
+
+  <!-- Starry Layer -->
+  <div class="star-layer"></div>
+
+  <!-- Background image -->
+  <img class="bg-video" src="Exposure 1.jpg.jpeg" alt="Background" />
+
+  <div class="wrap">
+    <!-- Gambar pill header yang kamu kirim -->
+    <img class="pill-img" src="HEADER JBB.png" alt="Header badges" />
+
+    <div id="timerOverlay" class="timer-overlay">
+      <div class="timer-ring-container">
+        <svg class="timer-ring" viewBox="0 0 120 120">
+          <circle class="timer-ring-bg" cx="60" cy="60" r="54" />
+          <circle id="timerRingProgress" class="timer-ring-progress" cx="60" cy="60" r="54" stroke-dasharray="339.292"
+            stroke-dashoffset="0" />
+        </svg>
+        <div id="timer" class="timer-float">45</div>
+      </div>
+    </div>
+
+    <div class="grid" role="list" aria-label="Pilihan 1 sampai 10">
+      <div class="card" role="listitem" data-number="1" style="background-image: url(&quot;assets/1.png&quot;)"></div>
+      <div class="card" role="listitem" data-number="2" style="background-image: url(&quot;assets/2.png&quot;)"></div>
+      <div class="card" role="listitem" data-number="3" style="background-image: url(&quot;assets/3.png&quot;)"></div>
+      <div class="card" role="listitem" data-number="4" style="background-image: url(&quot;assets/4.png&quot;)"></div>
+      <div class="card" role="listitem" data-number="5" style="background-image: url(&quot;assets/5.png&quot;)"></div>
+      <div class="card" role="listitem" data-number="6" style="background-image: url(&quot;assets/6.png&quot;)"></div>
+      <div class="card" role="listitem" data-number="7" style="background-image: url(&quot;assets/7.png&quot;)"></div>
+      <div class="card" role="listitem" data-number="8" style="background-image: url(&quot;assets/8.png&quot;)"></div>
+      <div class="card" role="listitem" data-number="9" style="background-image: url(&quot;assets/9.png&quot;)"></div>
+      <div class="card" role="listitem" data-number="10" style="background-image: url(&quot;assets/10.png&quot;)"></div>
+    </div>
+    <div id="overlay" aria-hidden="true" class="overlay" role="dialog">
+      <div id="overlayCard" class="overlay-card" aria-label="Kartu besar"></div>
+    </div>
+    <!-- <div id="debugSize" class="debug-size" aria-live="polite" title="Ukuran viewport dan area konten"></div> -->
+  </div>
+  <script>
+    (function () {
+      /* ===========================
+         PARTICLE SYSTEM
+      =========================== */
+      const canvas = document.getElementById('particleCanvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      class Particle {
+        constructor() { this.reset(); }
+        reset() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 3 + 0.5;
+          this.speedX = (Math.random() - 0.5) * 0.4;
+          this.speedY = (Math.random() - 0.5) * 0.4;
+          this.opacity = Math.random() * 0.5 + 0.1;
+          this.hue = Math.random() * 60 + 220; // blue-purple range
+        }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          this.opacity += (Math.random() - 0.5) * 0.01;
+          this.opacity = Math.max(0.05, Math.min(0.6, this.opacity));
+          if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+            this.reset();
+          }
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${this.hue}, 80%, 70%, ${this.opacity})`;
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+      function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        // Draw connections
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(108, 92, 231, ${0.08 * (1 - dist / 120)})`;
+              ctx.lineWidth = 0.5;
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animateParticles);
+      }
+      animateParticles();
+
+      /* ===========================
+         RESPONSIVE GRID
+      =========================== */
+      const wrap = document.querySelector(".wrap");
+      const pill = document.querySelector(".pill-img");
+      const rootStyle = document.documentElement.style;
+      const css = getComputedStyle(document.documentElement);
+      const GAP_RATIO = parseFloat(css.getPropertyValue("--gap-ratio")) || 0.24;
+      const DENSITY = parseFloat(css.getPropertyValue("--density")) || 0.96;
+      const CARD_MIN = parseFloat(css.getPropertyValue("--card-min")) || 120;
+      const CARD_MAX = parseFloat(css.getPropertyValue("--card-max")) || 280;
+      const CARD_TARGET = parseFloat(css.getPropertyValue("--card-target")) || null;
+
+      function fitGrid() {
+        const cols = 5, rows = 4;
+        let availW = window.innerWidth;
+        if (wrap) {
+          const ws = getComputedStyle(wrap);
+          availW = wrap.clientWidth - (parseFloat(ws.paddingLeft) || 0) - (parseFloat(ws.paddingRight) || 0);
+        }
+        const pillRect = pill ? pill.getBoundingClientRect() : { height: 0 };
+        const pillBottom = pill ? parseFloat(getComputedStyle(pill).marginBottom) || 0 : 0;
+        const bottomSpace = parseFloat(css.getPropertyValue("--bottom-space")) || 0;
+        const availH = window.innerHeight - pillRect.height - pillBottom - bottomSpace;
+        const cardByWidth = (availW * DENSITY) / (cols + (cols - 1) * GAP_RATIO);
+        const cardByHeight = (availH * DENSITY) / (rows + (rows - 1) * GAP_RATIO);
+        let card = Math.min(cardByWidth, cardByHeight, CARD_MAX);
+        if (CARD_TARGET) card = Math.min(card, CARD_TARGET);
+        card = Math.max(CARD_MIN, card);
+        const gap = Math.max(20, Math.min(card * GAP_RATIO, 80));
+        rootStyle.setProperty("--card-size", `${Math.floor(card)}px`);
+        rootStyle.setProperty("--grid-gap", `${Math.floor(gap)}px`);
+      }
+      window.addEventListener("resize", fitGrid);
+      window.addEventListener("load", fitGrid);
+      fitGrid();
+
+      /* ===========================
+         CARD SETUP & ENTRANCE INDEX
+      =========================== */
+      const overlay = document.getElementById("overlay");
+      const overlayCard = document.getElementById("overlayCard");
+      const cards = Array.from(document.querySelectorAll(".card"));
+      const cardMap = new Map(cards.map((el) => [Number(el.dataset.number), el]));
+
+      // Assign staggered entrance delay
+      cards.forEach((c, i) => c.style.setProperty('--card-index', i));
+
+      const hidden = new Set();
+      let overlayNumber = null;
+      let lastPickedNumber = null;
+
+      // Buffer for 2-digit numbers
+      let digitBuffer = "";
+      let bufferTimer = null;
+      const BUFFER_MS = 450;
+
+      /* ===========================
+         3D TILT ON HOVER
+      =========================== */
+      cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          if (card.classList.contains('dim') || card.classList.contains('spotlight')) return;
+          const rect = card.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width - 0.5;
+          const y = (e.clientY - rect.top) / rect.height - 0.5;
+          card.style.transform = `perspective(600px) rotateY(${x * 15}deg) rotateX(${-y * 15}deg) translateY(-6px) scale(1.04)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          if (card.classList.contains('dim') || card.classList.contains('spotlight')) return;
+          card.style.transform = '';
+        });
+      });
+
+      /* ===========================
+         OVERLAY FUNCTIONS
+      =========================== */
+      function setOverlay(number) {
+        overlayNumber = number;
+        overlayCard.style.backgroundImage = `url('assets/${number}.png')`;
+        overlay.classList.add("show");
+        overlay.setAttribute("aria-hidden", "false");
+      }
+      function closeOverlay() {
+        overlayNumber = null;
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+      }
+      function refreshHidden() {
+        cardMap.forEach((el, num) => el.classList.toggle("hidden", hidden.has(num)));
+      }
+
+      function triggerNumber(n) {
+        if (!cardMap.has(n)) return;
+        if (overlayNumber === null) {
+          if (hidden.has(n)) { hidden.delete(n); refreshHidden(); }
+          else { setOverlay(n); }
+        } else {
+          if (overlayNumber === n) { closeOverlay(); hidden.add(n); refreshHidden(); }
+          else { setOverlay(n); }
+        }
+      }
+
+      function commitBuffer() {
+        if (!digitBuffer) return;
+        const n = Number(digitBuffer);
+        digitBuffer = "";
+        if (Number.isInteger(n) && n >= 1 && n <= 20) triggerNumber(n);
+      }
+      function handleDigit(key) {
+        digitBuffer += key;
+        clearTimeout(bufferTimer);
+        bufferTimer = setTimeout(commitBuffer, BUFFER_MS);
+      }
+
+      /* ===========================
+         CONFETTI & SHOCKWAVE & SPARKLES
+      =========================== */
+      function spawnConfetti(x, y) {
+        const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bb5', '#845ec2'];
+        for (let i = 0; i < 40; i++) {
+          const piece = document.createElement('div');
+          piece.className = 'confetti-piece';
+          piece.style.left = x + 'px';
+          piece.style.top = y + 'px';
+          piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+          piece.style.width = (Math.random() * 8 + 4) + 'px';
+          piece.style.height = (Math.random() * 8 + 4) + 'px';
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 200 + 50;
+          piece.animate([
+            { transform: `translate(0,0) rotate(0deg)`, opacity: 1 },
+            { transform: `translate(${Math.cos(angle) * speed}px, ${Math.sin(angle) * speed + 300}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+          ], { duration: 1500 + Math.random() * 500, easing: 'cubic-bezier(.25,.46,.45,.94)', fill: 'forwards' });
+          document.body.appendChild(piece);
+          setTimeout(() => piece.remove(), 2200);
+        }
+      }
+
+      function spawnShockwave(x, y) {
+        const el = document.createElement('div');
+        el.className = 'shockwave';
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 900);
+      }
+
+      function spawnSparkles(x, y) {
+        for (let i = 0; i < 12; i++) {
+          const s = document.createElement('div');
+          s.className = 'sparkle';
+          s.style.left = x + 'px';
+          s.style.top = y + 'px';
+          const angle = (Math.PI * 2 * i) / 12;
+          const dist = 40 + Math.random() * 30;
+          s.style.setProperty('--sx', `${Math.cos(angle) * dist}px`);
+          s.style.setProperty('--sy', `${Math.sin(angle) * dist}px`);
+          s.style.animationDelay = `${Math.random() * 0.2}s`;
+          document.body.appendChild(s);
+          setTimeout(() => s.remove(), 1100);
+        }
+      }
+
+      function spawnFloatingNumber(x, y, number) {
+        const el = document.createElement('div');
+        el.className = 'float-number';
+        el.textContent = number;
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1400);
+      }
+
+      function screenFlash() {
+        const flash = document.createElement('div');
+        flash.className = 'screen-flash';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 600);
+      }
+
+      /* ===========================
+         KEYBOARD HANDLER
+      =========================== */
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space") { e.preventDefault(); togglePauseTimer(); }
+        if (e.key.toLowerCase() === "t") startTimer();
+        if (e.key.toLowerCase() === "p") resetAndCloseTimer();
+        if (e.key === "Enter") {
+          if (lastPickedNumber !== null) {
+            hidden.add(lastPickedNumber);
+            refreshHidden();
+            closeOverlay();
+            lastPickedNumber = null;
+          }
+          startRandomPick();
+        }
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
+        if (e.key >= "0" && e.key <= "9") { handleDigit(e.key); return; }
+        if (e.code && e.code.startsWith("Numpad")) {
+          const d = e.code.replace("Numpad", "");
+          if (d >= "0" && d <= "9") { handleDigit(d); return; }
+        }
+        if (e.key === "Escape") {
+          if (lastPickedNumber !== null) {
+            hidden.add(lastPickedNumber);
+            refreshHidden();
+            closeOverlay();
+            showTimerReady();
+            lastPickedNumber = null;
+          }
+        }
+      });
+
+      /* ===========================
+         RANDOM PICK WITH ENHANCED ANIMATION
+      =========================== */
+      let rolling = false;
+      let rollInterval = null;
+
+      function getAvailableCards() {
+        return cards.filter((c) => !hidden.has(Number(c.dataset.number)));
+      }
+      function clearEffects() {
+        cards.forEach((c) => {
+          c.classList.remove("spotlight", "dim", "winner");
+          c.style.transform = '';
+        });
+      }
+
+      function startRandomPick(duration = 3500) {
+        if (rolling) return;
+        rolling = true;
+        const available = getAvailableCards();
+        if (available.length === 0) { rolling = false; return; }
+
+        // Dim all visible cards
+        cards.forEach((c) => {
+          if (!hidden.has(Number(c.dataset.number))) c.classList.add("dim");
+        });
+
+        let currentCard = null;
+        let speed = 80;
+        let elapsed = 0;
+
+        function tick() {
+          if (currentCard) currentCard.classList.remove("spotlight");
+          currentCard = available[Math.floor(Math.random() * available.length)];
+          currentCard.classList.add("spotlight");
+          elapsed += speed;
+
+          if (elapsed < duration) {
+            speed = 80 + (elapsed / duration) * 300;
+            rollInterval = setTimeout(tick, speed);
+          } else {
+            // Final pick!
+            rolling = false;
+            clearEffects();
+            currentCard.classList.add("spotlight", "winner");
+
+            const rect = currentCard.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const number = Number(currentCard.dataset.number);
+
+            // Sparkles + shockwave
+            spawnSparkles(cx, cy);
+            spawnShockwave(cx, cy);
+            screenFlash();
+            spawnConfetti(cx, cy);
+
+            lastPickedNumber = number;
+
+            // After winner pulse, show overlay with big card
+            setTimeout(() => {
+              clearEffects();
+              setOverlay(number);
+            }, 1800);
+          }
+        }
+        tick();
+      }
+      window.startRandomPick = startRandomPick;
+
+      /* ===========================
+         TIMER WITH RING PROGRESS
+      =========================== */
+      const timerOverlay = document.getElementById("timerOverlay");
+      const timerEl = document.getElementById("timer");
+      const timerRing = document.getElementById("timerRingProgress");
+      const TIMER_MAX = 45;
+      const CIRCUMFERENCE = 2 * Math.PI * 54; // r=54
+
+      let timerInterval = null;
+      let timeLeft = TIMER_MAX;
+      let timerRunning = false;
+      let timerPaused = false;
+
+      function updateRing() {
+        const progress = timeLeft / TIMER_MAX;
+        const offset = CIRCUMFERENCE * (1 - progress);
+        timerRing.style.strokeDashoffset = offset;
+        // Ring color
+        if (timeLeft > 30) timerRing.style.stroke = '#6c5ce7';
+        else if (timeLeft > 15) timerRing.style.stroke = '#ffd700';
+        else if (timeLeft > 5) timerRing.style.stroke = '#ff9f43';
+        else timerRing.style.stroke = '#ff4757';
+      }
+
+      function showTimerReady() {
+        timerOverlay.classList.add("show");
+        timerEl.textContent = timeLeft;
+        timerEl.style.transform = "scale(1)";
+        updateRing();
+      }
+
+      function renderTimer() {
+        timerEl.textContent = timeLeft;
+        updateRing();
+
+        // Subtle bounce on each tick
+        timerEl.classList.remove('tick-bounce');
+        void timerEl.offsetWidth; // force reflow to restart animation
+        timerEl.classList.add('tick-bounce');
+
+        // Text color
+        if (timeLeft > 30) timerEl.style.color = "#ffffff";
+        else if (timeLeft > 15) timerEl.style.color = "#ffd700";
+        else if (timeLeft > 5) timerEl.style.color = "#ff9f43";
+        else timerEl.style.color = "#ff4757";
+
+        // Pulse classes
+        timerEl.classList.remove('pulse-30', 'pulse-15', 'pulse-5', 'finish');
+        if (timeLeft <= 0) { timerEl.classList.add('finish'); screenFlash(); }
+        else if (timeLeft <= 5) timerEl.classList.add('pulse-5');
+        else if (timeLeft <= 15) timerEl.classList.add('pulse-15');
+        else if (timeLeft <= 30) timerEl.classList.add('pulse-30');
+      }
+
+      function startTimer() {
+        if (timerRunning) return;
+        timerRunning = true;
+        timerPaused = false;
+        timeLeft = TIMER_MAX;
+        timerOverlay.classList.add("show");
+        renderTimer();
+        timerInterval = setInterval(() => {
+          if (timerPaused) return;
+          timeLeft--;
+          renderTimer();
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerRunning = false;
+          }
+        }, 1000);
+      }
+
+      function togglePauseTimer() {
+        if (!timerRunning) return;
+        timerPaused = !timerPaused;
+      }
+
+      function resetTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timeLeft = TIMER_MAX;
+        timerRunning = false;
+        timerPaused = false;
+        renderTimer();
+      }
+
+      function resetAndCloseTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerRunning = false;
+        timerPaused = false;
+        timeLeft = TIMER_MAX;
+        timerEl.textContent = timeLeft;
+        timerEl.style.color = "#ffffff";
+        timerEl.style.transform = "scale(1)";
+        timerEl.classList.remove('pulse-30', 'pulse-15', 'pulse-5', 'finish');
+        timerRing.style.strokeDashoffset = 0;
+        timerRing.style.stroke = '#6c5ce7';
+        timerOverlay.classList.remove("show");
+      }
+    })();
+  </script>
+</body>
+
+</html>

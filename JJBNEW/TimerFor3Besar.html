@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Timer – Jegeg Bagus Badung 2026</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Montserrat', system-ui, sans-serif;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .wrap {
+      max-width: 100vw;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      gap: 120px;
+    }
+
+    /* === HEADER PILL === */
+    .pill-img {
+      width: clamp(320px, 25vmin, 500px);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 12px 22px #00000060);
+      border-radius: 999px;
+      animation: levitate 4s ease-in-out infinite, pillGlow 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes levitate {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    @keyframes pillGlow {
+      0% {
+        filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.6)) brightness(1);
+      }
+
+      100% {
+        filter: drop-shadow(0 0 35px rgba(108, 92, 231, 0.6)) brightness(1.15);
+      }
+    }
+
+    /* === PARTICLES & BACKGROUND EFFECTS === */
+    #particleCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .ambient-orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(80px);
+      opacity: 0.18;
+      z-index: 0;
+    }
+
+    .ambient-orb.orb1 {
+      width: 400px;
+      height: 400px;
+      background: #6c5ce7;
+      top: -100px;
+      left: -100px;
+      animation: orbFloat1 12s ease-in-out infinite, orbPulse 4s ease-in-out infinite alternate;
+    }
+
+    .ambient-orb.orb2 {
+      width: 350px;
+      height: 350px;
+      background: #0984e3;
+      bottom: -80px;
+      right: -80px;
+      animation: orbFloat2 15s ease-in-out infinite, orbPulse 5s ease-in-out infinite alternate;
+    }
+
+    .ambient-orb.orb3 {
+      width: 300px;
+      height: 300px;
+      background: #e17055;
+      top: 50%;
+      left: 50%;
+      animation: orbFloat3 18s ease-in-out infinite, orbPulse 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbPulse {
+      0% {
+        opacity: 0.12;
+      }
+
+      100% {
+        opacity: 0.25;
+        filter: blur(60px);
+      }
+    }
+
+    @keyframes orbFloat1 {
+
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      33% {
+        transform: translate(120px, 80px) scale(1.2);
+      }
+
+      66% {
+        transform: translate(-60px, 140px) scale(0.9);
+      }
+    }
+
+    @keyframes orbFloat2 {
+
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      33% {
+        transform: translate(-100px, -60px) scale(1.15);
+      }
+
+      66% {
+        transform: translate(80px, -120px) scale(0.85);
+      }
+    }
+
+    @keyframes orbFloat3 {
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(calc(-50% + 150px), calc(-50% - 100px)) scale(1.3);
+      }
+    }
+
+    .gradient-vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 20% 50%, rgba(108, 92, 231, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(9, 132, 227, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 90%, rgba(225, 112, 85, 0.06) 0%, transparent 50%);
+      animation: vignetteShift 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes vignetteShift {
+      0% {
+        opacity: 0.6;
+        filter: hue-rotate(0deg);
+      }
+
+      50% {
+        opacity: 1;
+        filter: hue-rotate(15deg);
+      }
+
+      100% {
+        opacity: 0.7;
+        filter: hue-rotate(-10deg);
+      }
+    }
+
+    .star-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 10%, rgba(255, 255, 255, 0.8) 100%, transparent),
+        radial-gradient(2px 2px at 20% 30%, rgba(255, 215, 0, 0.6) 100%, transparent),
+        radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, 0.7) 100%, transparent),
+        radial-gradient(2px 2px at 60% 20%, rgba(255, 255, 255, 0.5) 100%, transparent),
+        radial-gradient(1px 1px at 80% 80%, rgba(255, 215, 0, 0.8) 100%, transparent),
+        radial-gradient(2px 2px at 90% 40%, rgba(255, 255, 255, 0.9) 100%, transparent);
+      background-size: 200px 200px;
+      opacity: 0.4;
+      animation: starsTwinkle 4s infinite alternate;
+    }
+
+    @keyframes starsTwinkle {
+      0% {
+        opacity: 0.2;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0.6;
+        transform: scale(1.02);
+      }
+    }
+
+    .star-layer::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 150px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.8));
+      transform: rotate(-45deg);
+      filter: drop-shadow(0 0 10px white);
+      animation: shootingStar 8s linear infinite;
+    }
+
+    @keyframes shootingStar {
+      0% {
+        transform: rotate(-45deg) translateX(0);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      20%,
+      100% {
+        transform: rotate(-45deg) translateX(-1500px);
+        opacity: 0;
+      }
+    }
+
+    .timer-ring-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: ringGlowPulse 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes ringGlowPulse {
+      0% {
+        filter: drop-shadow(0 0 10px rgba(108, 92, 231, 0.3));
+      }
+
+      100% {
+        filter: drop-shadow(0 0 25px rgba(108, 92, 231, 0.6));
+      }
+    }
+
+    .timer-ring {
+      width: clamp(240px, 35vmin, 400px);
+      height: clamp(240px, 35vmin, 400px);
+      transform: rotate(-90deg);
+    }
+
+    .timer-ring-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 6;
+    }
+
+    .timer-ring-progress {
+      fill: none;
+      stroke: #6c5ce7;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease, stroke 0.5s ease;
+    }
+
+    .timer-float {
+      position: absolute;
+      font-size: clamp(72px, 10vmin, 130px);
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), 0 0 28px rgba(255, 255, 255, 0.45);
+      transition: color 0.3s ease, text-shadow 0.3s ease, transform 0.15s ease;
+      animation: neonFlicker 3s infinite alternate;
+    }
+
+    @keyframes neonFlicker {
+
+      0%,
+      19%,
+      21%,
+      23%,
+      25%,
+      54%,
+      56%,
+      100% {
+        opacity: 1;
+        filter: brightness(1);
+      }
+
+      20%,
+      24%,
+      55% {
+        opacity: 0.85;
+        filter: brightness(0.8);
+      }
+    }
+
+    /* Subtle bounce on each tick */
+    .timer-float.tick-bounce {
+      animation: digitBounce 0.3s cubic-bezier(.25, .46, .45, .94);
+    }
+
+    @keyframes digitBounce {
+      0% {
+        transform: scale(1);
+      }
+
+      40% {
+        transform: scale(1.08);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* Timer pulse classes */
+    @keyframes pulseSlow {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.06);
+      }
+    }
+
+    @keyframes pulseMedium {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.12);
+      }
+    }
+
+    @keyframes pulseFast {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.2);
+      }
+    }
+
+    @keyframes timerShake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-4px);
+      }
+
+      40% {
+        transform: translateX(4px);
+      }
+
+      60% {
+        transform: translateX(-3px);
+      }
+
+      80% {
+        transform: translateX(3px);
+      }
+    }
+
+    .timer-float.pulse-30 {
+      animation: pulseSlow 1.2s infinite;
+    }
+
+    .timer-float.pulse-15 {
+      animation: pulseMedium 0.8s infinite;
+    }
+
+    .timer-float.pulse-5 {
+      animation: pulseFast 0.4s infinite, timerShake 0.3s infinite;
+    }
+
+    .timer-float.finish {
+      animation: none !important;
+      transform: scale(1.35);
+      color: #ff4757;
+      text-shadow: 0 0 40px rgba(255, 71, 87, 0.8);
+    }
+
+    /* === SCREEN FLASH === */
+    .screen-flash {
+      position: fixed;
+      inset: 0;
+      background: white;
+      z-index: 100;
+      pointer-events: none;
+      animation: flashAnim 0.5s ease-out forwards;
+    }
+
+    @keyframes flashAnim {
+      0% {
+        opacity: 0.7;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Particle Canvas -->
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- Ambient Glow Orbs -->
+  <div class="ambient-orb orb1"></div>
+  <div class="ambient-orb orb2"></div>
+  <div class="ambient-orb orb3"></div>
+
+  <!-- Morphing Gradient Vignette -->
+  <div class="gradient-vignette"></div>
+
+  <!-- Starry Layer -->
+  <div class="star-layer"></div>
+
+  <!-- Background image -->
+  <img class="bg-video" src="Exposure 1.jpg.jpeg" alt="Background" />
+
+  <div class="wrap">
+    <!-- Gambar pill header yang kamu kirim -->
+    <img class="pill-img" src="HEADER JBB.png" alt="Header badges" />
+
+    <div class="timer-ring-container">
+      <svg class="timer-ring" viewBox="0 0 120 120">
+        <circle class="timer-ring-bg" cx="60" cy="60" r="54" />
+        <circle id="timerRingProgress" class="timer-ring-progress" cx="60" cy="60" r="54" stroke-dasharray="339.292"
+          stroke-dashoffset="0" />
+      </svg>
+      <div id="timer" class="timer-float">60</div>
+    </div>
+  </div>
+
+  <script>
+    // Particle System Logic
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 3 + 0.5;
+        this.speedX = (Math.random() - 0.5) * 0.4;
+        this.speedY = (Math.random() - 0.5) * 0.4;
+        this.opacity = Math.random() * 0.5 + 0.1;
+        this.hue = Math.random() * 60 + 220; // blue-purple range
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.opacity += (Math.random() - 0.5) * 0.01;
+        this.opacity = Math.max(0.05, Math.min(0.6, this.opacity));
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue}, 80%, 70%, ${this.opacity})`;
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      // Draw connections
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(108, 92, 231, ${0.08 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // Timer Logic
+    const timerEl = document.getElementById("timer");
+    const timerRing = document.getElementById("timerRingProgress");
+
+    // Setting timer default to 60 seconds (as requested previously in timer.html)
+    // You can change this to 45 to match Kedua.html exactly
+    const TIMER_MAX = 60;
+    const CIRCUMFERENCE = 2 * Math.PI * 54; // r=54
+
+    let timerInterval = null;
+    let timeLeft = TIMER_MAX;
+    let timerRunning = false;
+    let timerPaused = false;
+
+    function screenFlash() {
+      const flash = document.createElement('div');
+      flash.className = 'screen-flash';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 600);
+    }
+
+    function updateRing() {
+      const progress = timeLeft / TIMER_MAX;
+      const offset = CIRCUMFERENCE * (1 - progress);
+      timerRing.style.strokeDashoffset = offset;
+
+      // Ring color thresholds adapted for 60s max
+      if (timeLeft > 30) timerRing.style.stroke = '#6c5ce7';
+      else if (timeLeft > 15) timerRing.style.stroke = '#ffd700';
+      else if (timeLeft > 5) timerRing.style.stroke = '#ff9f43';
+      else timerRing.style.stroke = '#ff4757';
+    }
+
+    function renderTimer() {
+      timerEl.textContent = timeLeft;
+      updateRing();
+
+      // Subtle bounce on each tick
+      timerEl.classList.remove('tick-bounce');
+      void timerEl.offsetWidth; // force reflow
+      timerEl.classList.add('tick-bounce');
+
+      // Text color thresholds
+      if (timeLeft > 30) timerEl.style.color = "#ffffff";
+      else if (timeLeft > 15) timerEl.style.color = "#ffd700";
+      else if (timeLeft > 5) timerEl.style.color = "#ff9f43";
+      else timerEl.style.color = "#ff4757";
+
+      // Pulse classes
+      timerEl.classList.remove('pulse-30', 'pulse-15', 'pulse-5', 'finish');
+      if (timeLeft <= 0) {
+        timerEl.classList.add('finish');
+        screenFlash();
+      }
+      else if (timeLeft <= 5) timerEl.classList.add('pulse-5');
+      else if (timeLeft <= 15) timerEl.classList.add('pulse-15');
+      else if (timeLeft <= 30) timerEl.classList.add('pulse-30');
+    }
+
+    function startTimer() {
+      if (timerRunning) return;
+      timerRunning = true;
+      timerPaused = false;
+
+      // If finished, reset before starting again
+      if (timeLeft <= 0) {
+        timeLeft = TIMER_MAX;
+      }
+
+      renderTimer();
+      timerInterval = setInterval(() => {
+        if (timerPaused) return;
+        timeLeft--;
+        renderTimer();
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          timerRunning = false;
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      if (!timerRunning) return;
+      timerPaused = !timerPaused;
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timeLeft = TIMER_MAX;
+      timerRunning = false;
+      timerPaused = false;
+
+      timerEl.textContent = timeLeft;
+      timerEl.style.color = "#ffffff";
+      timerEl.style.transform = "scale(1)";
+      timerEl.classList.remove('pulse-30', 'pulse-15', 'pulse-5', 'finish', 'tick-bounce');
+      timerRing.style.strokeDashoffset = 0;
+      timerRing.style.stroke = '#6c5ce7';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key.toLowerCase() === 't') {
+        startTimer();
+      }
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        pauseTimer();
+      }
+
+      if (e.key.toLowerCase() === 'p') {
+        resetTimer();
+      }
+    });
+
+    renderTimer(); // init
+  </script>
+
+</body>
+
+</html>
